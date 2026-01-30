@@ -4,8 +4,20 @@ export const MOCK_STUDENTS: Student[] = [
   {
     id: '1',
     name: 'Ana Clara',
+    email: 'ana.clara@email.com',
+    phone: '11999999999',
+    status: 'active',
+    createdAt: '2023-01-15',
+    birthDate: '1995-05-20',
     age: 28,
+    gender: 'feminino',
+    height: 165,
+    weight: 62,
     goal: 'Hipertrofia e Definição',
+    experienceLevel: 'intermediario',
+    trainingDays: 5,
+    trainingType: 'individual',
+    startDate: '2023-01-20',
     avatarUrl: 'https://picsum.photos/seed/ana/200/200',
     weeklyPlan: [
       {
@@ -35,8 +47,21 @@ export const MOCK_STUDENTS: Student[] = [
   {
     id: '2',
     name: 'Carlos Mendes',
+    email: 'carlos.m@email.com',
+    phone: '11988888888',
+    status: 'active',
+    createdAt: '2023-02-10',
+    birthDate: '1988-11-10',
     age: 35,
+    gender: 'masculino',
+    height: 180,
+    weight: 95,
     goal: 'Perda de Peso',
+    experienceLevel: 'iniciante',
+    trainingDays: 3,
+    trainingType: 'coletivo',
+    startDate: '2023-02-12',
+    injuries: 'Condromalácia patelar leve no joelho direito',
     avatarUrl: 'https://picsum.photos/seed/carlos/200/200',
     weeklyPlan: []
   }

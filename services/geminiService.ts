@@ -1,8 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { Student, WorkoutSession, MuscleGroup } from '../types';
 
-const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // Schema definitions for strict JSON output
 const exerciseSchema: Schema = {
@@ -42,23 +41,32 @@ const weekPlanSchema: Schema = {
 };
 
 export const generateWorkoutPlan = async (student: Student, specificGoal?: string): Promise<WorkoutSession[]> => {
-  if (!apiKey) {
-    console.warn("API Key is missing. Returning empty plan.");
-    return [];
-  }
-
   const prompt = `
     Atue como um Personal Trainer de elite.
     Crie uma ficha de treino semanal (Segunda a Domingo) para o seguinte aluno:
-    Nome: ${student.name}
-    Idade: ${student.age}
-    Objetivo Principal: ${specificGoal || student.goal}
     
-    Regras:
-    1. O treino deve ser equilibrado e seguro.
-    2. Responda APENAS com o JSON seguindo o schema.
-    3. Use nomes de exercícios comuns em academias no Brasil.
-    4. Se for dia de descanso, o array de exercises deve ser vazio.
+    PERFIL DO ALUNO:
+    Nome: ${student.name}
+    Idade: ${student.age} anos
+    Gênero: ${student.gender}
+    Nível de Experiência: ${student.experienceLevel}
+    Dias disponíveis para treino: ${student.trainingDays} dias na semana
+    Modalidade: ${student.trainingType === 'individual' ? 'Personal (Individual - Foco em técnica e especificidade)' : 'Treino Coletivo (Adaptável para grupos)'}
+    
+    OBJETIVO:
+    ${specificGoal || student.goal}
+    
+    RESTRIÇÕES E SAÚDE (MUITO IMPORTANTE):
+    Lesões/Restrições: ${student.injuries || "Nenhuma relatada"}
+    Notas Médicas: ${student.medicalNotes || "Nenhuma"}
+    
+    Regras de Ouro:
+    1. O treino deve ser SEGURO. Se houver lesões, evite exercícios que agravem a condição.
+    2. Respeite o nível de experiência (Iniciante = menos volume, mais máquinas; Avançado = mais volume, pesos livres).
+    3. Se for 'Treino Coletivo', prefira exercícios que usem menos equipamentos complexos ou que sejam fáceis de revezar.
+    4. Responda APENAS com o JSON seguindo o schema fornecido.
+    5. Use nomes de exercícios comuns em academias no Brasil.
+    6. Se o aluno treina X dias, os outros dias devem ser "Descanso" (exercises array vazio).
   `;
 
   try {

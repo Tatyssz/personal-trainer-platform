@@ -25,13 +25,40 @@ export interface WorkoutSession {
   exercises: Exercise[];
 }
 
+export type Gender = 'masculino' | 'feminino' | 'outro' | 'nao_informar';
+export type ExperienceLevel = 'iniciante' | 'intermediario' | 'avancado';
+export type TrainingType = 'individual' | 'coletivo';
+
 export interface Student {
+  // Identificação
   id: string;
-  name: string;
-  age: number;
-  goal: string; // "Perda de peso", "Hipertrofia", "Resistência"
-  weeklyPlan: WorkoutSession[];
+  name: string; // full_name
+  email: string;
+  phone: string;
   avatarUrl: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+
+  // Perfil Básico
+  birthDate: string;
+  age: number; // Derivado para facilidade de uso na IA
+  gender: Gender;
+  height: number; // cm
+  weight: number; // kg
+
+  // Objetivo e Treino
+  goal: string; // Hipertrofia, Emagrecimento, etc.
+  experienceLevel: ExperienceLevel;
+  trainingDays: number;
+  trainingType: TrainingType; // New field
+  startDate: string;
+
+  // Saúde (Opcionais)
+  injuries?: string;
+  medicalNotes?: string;
+  
+  // Dados do App
+  weeklyPlan: WorkoutSession[];
 }
 
 export type ViewState = 'DASHBOARD' | 'STUDENTS' | 'STUDENT_DETAIL';

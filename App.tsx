@@ -3,7 +3,7 @@ import { MOCK_STUDENTS } from './constants';
 import { Student, ViewState, WorkoutSession } from './types';
 import { StudentList } from './components/StudentList';
 import { WeeklyPlan } from './components/WeeklyPlan';
-import { LayoutDashboard, Users, Settings, LogOut, ArrowLeft, Dumbbell } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, ArrowLeft, Dumbbell, LucideIcon } from 'lucide-react';
 
 export default function App() {
   const [view, setView] = useState<ViewState>('DASHBOARD');
@@ -21,7 +21,45 @@ export default function App() {
     }));
   };
 
-  const SidebarItem = ({ icon: Icon, label, active, onClick }: any) => (
+  const handleAddStudent = (data: Omit<Student, 'id' | 'weeklyPlan' | 'avatarUrl' | 'age' | 'status' | 'createdAt'>) => {
+    // Calculate Age
+    const birth = new Date(data.birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    const newStudent: Student = {
+      ...data,
+      id: Math.random().toString(36).substr(2, 9),
+      age: age,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      // Generates a deterministic-looking avatar based on name length for visual consistency
+      avatarUrl: `https://picsum.photos/seed/${data.name.replace(/\s/g, '')}/200`,
+      weeklyPlan: []
+    };
+    setStudents([...students, newStudent]);
+  };
+
+  const handleDeleteStudent = (id: string) => {
+    setStudents(prev => prev.filter(s => s.id !== id));
+    if (selectedStudentId === id) {
+      setSelectedStudentId(null);
+      setView('STUDENTS');
+    }
+  };
+
+  interface SidebarItemProps {
+    icon: LucideIcon;
+    label: string;
+    active: boolean;
+    onClick: () => void;
+  }
+
+  const SidebarItem = ({ icon: Icon, label, active, onClick }: SidebarItemProps) => (
     <button 
       onClick={onClick}
       title={label}
@@ -51,14 +89,30 @@ export default function App() {
                 <img src={selectedStudent.avatarUrl} className="w-16 h-16 rounded-full border-2 border-primary-500" />
                 <div>
                     <h1 className="text-3xl font-bold text-white">{selectedStudent.name}</h1>
-                    <div className="flex gap-2 mt-1">
+                    <div className="flex gap-2 mt-1 flex-wrap">
                         <span className="px-2 py-0.5 rounded bg-dark-700 text-xs text-gray-300 border border-dark-600">
                             {selectedStudent.goal}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-dark-700 text-xs text-gray-300 border border-dark-600">
                             {selectedStudent.age} Anos
                         </span>
+                         <span className="px-2 py-0.5 rounded bg-dark-700 text-xs text-gray-300 border border-dark-600 capitalize">
+                            {selectedStudent.experienceLevel}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-xs border capitalize ${
+                            selectedStudent.trainingType === 'individual' 
+                            ? 'bg-primary-900/30 text-primary-300 border-primary-800' 
+                            : 'bg-blue-900/30 text-blue-300 border-blue-800'
+                        }`}>
+                            Treino {selectedStudent.trainingType}
+                        </span>
                     </div>
+                    {selectedStudent.injuries && (
+                         <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            Restrição: {selectedStudent.injuries}
+                         </p>
+                    )}
                 </div>
             </div>
 
@@ -80,6 +134,8 @@ export default function App() {
             setSelectedStudentId(s.id);
             setView('STUDENT_DETAIL');
           }} 
+          onAddStudent={handleAddStudent}
+          onDeleteStudent={handleDeleteStudent}
         />
       );
     }
@@ -170,7 +226,7 @@ export default function App() {
         </nav>
 
         <div className="p-4 border-t border-dark-800">
-            <SidebarItem icon={LogOut} label="Sair" onClick={() => {}} />
+            <SidebarItem icon={LogOut} label="Sair" active={false} onClick={() => {}} />
         </div>
       </aside>
 
