@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Student, Gender, ExperienceLevel, TrainingType } from '../types';
-import { ChevronRight, UserPlus, X, Trash2, Calendar, Weight, Activity, FileText, Users } from 'lucide-react';
+import { ChevronRight, UserPlus, X, Trash2, Calendar, Weight, Activity, FileText, Users, Camera } from 'lucide-react';
 
 interface StudentListProps {
   students: Student[];
@@ -27,7 +27,9 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
     trainingType: 'individual' as TrainingType,
     startDate: new Date().toISOString().split('T')[0],
     injuries: '',
-    medicalNotes: ''
+    medicalNotes: '',
+    beforePhotoUrl: '',
+    afterPhotoUrl: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -247,7 +249,24 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
                 </div>
               </div>
 
-               {/* Seção 4: Saúde */}
+               {/* Seção 4: Progresso Visual (NOVO) */}
+               <div>
+                <h3 className="text-primary-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Camera size={16} /> Progresso Visual (Opcional)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">URL Foto "Antes"</label>
+                        <input type="text" name="beforePhotoUrl" value={formData.beforePhotoUrl} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" placeholder="https://..." />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">URL Foto "Depois" (Atual)</label>
+                        <input type="text" name="afterPhotoUrl" value={formData.afterPhotoUrl} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" placeholder="https://..." />
+                    </div>
+                </div>
+              </div>
+
+               {/* Seção 5: Saúde */}
               <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20">
                 <h3 className="text-red-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Activity size={16} /> Saúde e Restrições

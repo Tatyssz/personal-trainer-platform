@@ -50,8 +50,12 @@ export interface Student {
   goal: string; // Hipertrofia, Emagrecimento, etc.
   experienceLevel: ExperienceLevel;
   trainingDays: number;
-  trainingType: TrainingType; // New field
+  trainingType: TrainingType; 
   startDate: string;
+
+  // Progresso Visual
+  beforePhotoUrl?: string;
+  afterPhotoUrl?: string;
 
   // Saúde (Opcionais)
   injuries?: string;

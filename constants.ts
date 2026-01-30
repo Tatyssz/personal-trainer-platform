@@ -18,6 +18,8 @@ export const MOCK_STUDENTS: Student[] = [
     trainingDays: 5,
     trainingType: 'individual',
     startDate: '2023-01-20',
+    beforePhotoUrl: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&auto=format&fit=crop&q=60',
+    afterPhotoUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400&auto=format&fit=crop&q=60',
     avatarUrl: 'https://picsum.photos/seed/ana/200/200',
     weeklyPlan: [
       {

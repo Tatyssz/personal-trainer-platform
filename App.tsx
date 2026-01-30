@@ -3,7 +3,7 @@ import { MOCK_STUDENTS } from './constants';
 import { Student, ViewState, WorkoutSession } from './types';
 import { StudentList } from './components/StudentList';
 import { WeeklyPlan } from './components/WeeklyPlan';
-import { LayoutDashboard, Users, Settings, LogOut, ArrowLeft, Dumbbell, LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, ArrowLeft, Dumbbell, LucideIcon, Camera } from 'lucide-react';
 
 export default function App() {
   const [view, setView] = useState<ViewState>('DASHBOARD');
@@ -77,7 +77,7 @@ export default function App() {
   const renderContent = () => {
     if (view === 'STUDENT_DETAIL' && selectedStudent) {
       return (
-        <div className="h-full flex flex-col p-6 animate-fadeIn">
+        <div className="h-full flex flex-col p-6 animate-fadeIn overflow-y-auto">
             <button 
                 onClick={() => setView('STUDENTS')}
                 className="self-start flex items-center text-gray-500 hover:text-white mb-4 transition-colors text-sm font-medium"
@@ -85,11 +85,11 @@ export default function App() {
                 <ArrowLeft size={16} className="mr-1" /> Voltar para Alunos
             </button>
             
-            <div className="flex items-center gap-4 mb-8">
-                <img src={selectedStudent.avatarUrl} className="w-16 h-16 rounded-full border-2 border-primary-500" />
-                <div>
+            <div className="flex items-start gap-6 mb-8">
+                <img src={selectedStudent.avatarUrl} className="w-20 h-20 rounded-full border-2 border-primary-500 object-cover" />
+                <div className="flex-1">
                     <h1 className="text-3xl font-bold text-white">{selectedStudent.name}</h1>
-                    <div className="flex gap-2 mt-1 flex-wrap">
+                    <div className="flex gap-2 mt-2 flex-wrap">
                         <span className="px-2 py-0.5 rounded bg-dark-700 text-xs text-gray-300 border border-dark-600">
                             {selectedStudent.goal}
                         </span>
@@ -115,6 +115,38 @@ export default function App() {
                     )}
                 </div>
             </div>
+
+            {/* Progress Photos Section */}
+            {(selectedStudent.beforePhotoUrl || selectedStudent.afterPhotoUrl) && (
+                <div className="mb-8 p-4 bg-dark-800 rounded-2xl border border-dark-700">
+                    <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                        <Camera size={18} className="text-primary-500" />
+                        Progresso Visual
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        {selectedStudent.beforePhotoUrl && (
+                            <div className="relative group">
+                                <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">ANTES</div>
+                                <img 
+                                    src={selectedStudent.beforePhotoUrl} 
+                                    alt="Antes" 
+                                    className="w-full h-64 object-cover rounded-xl border border-dark-600 group-hover:border-primary-500/50 transition-colors"
+                                />
+                            </div>
+                        )}
+                        {selectedStudent.afterPhotoUrl && (
+                            <div className="relative group">
+                                <div className="absolute top-2 left-2 bg-primary-600/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm font-bold">DEPOIS (ATUAL)</div>
+                                <img 
+                                    src={selectedStudent.afterPhotoUrl} 
+                                    alt="Depois" 
+                                    className="w-full h-64 object-cover rounded-xl border border-dark-600 group-hover:border-primary-500/50 transition-colors"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div className="flex-1 min-h-0">
                 <WeeklyPlan 
