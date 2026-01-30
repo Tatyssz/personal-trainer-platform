@@ -1,0 +1,5 @@
+{
+  "name": "TrainerPro AI",
+  "description": "A comprehensive Personal Trainer application to manage students, organize workouts by muscle groups, and generate AI-powered weekly schedules.",
+  "requestFramePermissions": []
+}
