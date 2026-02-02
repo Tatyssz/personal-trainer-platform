@@ -15,11 +15,12 @@ export const MOCK_STUDENTS: Student[] = [
     weight: 62,
     goal: 'Hipertrofia e Definição',
     experienceLevel: 'intermediario',
-    trainingDays: 5,
     trainingType: 'individual',
+    schedule: {
+      days: ['Segunda', 'Terça', 'Quinta', 'Sexta'],
+      time: '18:30'
+    },
     startDate: '2023-01-20',
-    beforePhotoUrl: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&auto=format&fit=crop&q=60',
-    afterPhotoUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400&auto=format&fit=crop&q=60',
     avatarUrl: 'https://picsum.photos/seed/ana/200/200',
     weeklyPlan: [
       {
@@ -60,8 +61,11 @@ export const MOCK_STUDENTS: Student[] = [
     weight: 95,
     goal: 'Perda de Peso',
     experienceLevel: 'iniciante',
-    trainingDays: 3,
     trainingType: 'coletivo',
+    schedule: {
+      days: ['Segunda', 'Quarta', 'Sexta'],
+      time: '07:00'
+    },
     startDate: '2023-02-12',
     injuries: 'Condromalácia patelar leve no joelho direito',
     avatarUrl: 'https://picsum.photos/seed/carlos/200/200',

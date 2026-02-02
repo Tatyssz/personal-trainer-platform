@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { WorkoutSession, Student } from '../types';
 import { ExerciseCard } from './ExerciseCard';
-import { Calendar, ChevronRight, RefreshCw, Dumbbell } from 'lucide-react';
+import { Calendar, RefreshCw, Dumbbell, CheckCircle2, XCircle } from 'lucide-react';
 import { generateWorkoutPlan } from '../services/geminiService';
+import { DAYS_OF_WEEK } from '../constants';
 
 interface WeeklyPlanProps {
   student: Student;
@@ -12,8 +13,6 @@ interface WeeklyPlanProps {
 export const WeeklyPlan: React.FC<WeeklyPlanProps> = ({ student, onUpdatePlan }) => {
   const [activeDay, setActiveDay] = useState<string>('Segunda');
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
   const currentSession = student.weeklyPlan.find(s => s.dayOfWeek === activeDay);
 
@@ -31,6 +30,8 @@ export const WeeklyPlan: React.FC<WeeklyPlanProps> = ({ student, onUpdatePlan })
       setIsGenerating(false);
     }
   };
+
+  const isDayScheduled = (day: string) => student.schedule?.days.includes(day);
 
   return (
     <div className="h-full flex flex-col">
@@ -66,28 +67,54 @@ export const WeeklyPlan: React.FC<WeeklyPlanProps> = ({ student, onUpdatePlan })
 
       {/* Days Navigation */}
       <div className="flex overflow-x-auto pb-4 gap-2 mb-2 scrollbar-thin">
-        {days.map((day) => {
+        {DAYS_OF_WEEK.map((day) => {
           const session = student.weeklyPlan.find(s => s.dayOfWeek === day);
           const hasWorkout = session && session.exercises.length > 0;
           const isActive = activeDay === day;
+          const isScheduled = isDayScheduled(day);
+
+          let buttonStyle = "";
+          
+          if (isActive) {
+             if (isScheduled) {
+                // Active + Scheduled (Green)
+                buttonStyle = "bg-primary-900/30 border-primary-500 text-primary-400";
+             } else {
+                // Active + Not Scheduled (Yellow Highlight)
+                buttonStyle = "bg-yellow-900/20 border-yellow-500 text-yellow-400";
+             }
+          } else {
+             if (isScheduled) {
+                // Inactive + Scheduled (Greenish Gray)
+                buttonStyle = "bg-dark-800 border-primary-900 text-primary-500/80 hover:border-primary-500/50";
+             } else {
+                // Inactive + Not Scheduled (Yellowish Gray)
+                buttonStyle = "bg-yellow-900/5 border-yellow-900/30 text-yellow-700 hover:border-yellow-600/50 hover:text-yellow-600";
+             }
+          }
 
           return (
             <button
               key={day}
               onClick={() => setActiveDay(day)}
               className={`
-                flex flex-col items-center justify-center min-w-[80px] py-3 rounded-xl border transition-all
-                ${isActive 
-                  ? 'bg-primary-900/30 border-primary-500 text-primary-400' 
-                  : 'bg-dark-800 border-dark-700 text-gray-400 hover:border-gray-600'
-                }
+                flex flex-col items-center justify-center min-w-[80px] py-3 rounded-xl border-2 transition-all relative
+                ${buttonStyle}
               `}
             >
+              {isScheduled && (
+                <div className="absolute top-1.5 right-1.5">
+                   <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-primary-400' : 'bg-primary-600'}`}></div>
+                </div>
+              )}
+              
               <span className="text-xs font-bold uppercase mb-1">{day.slice(0, 3)}</span>
-              {hasWorkout ? (
-                <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-primary-400' : 'bg-gray-600'}`} />
+              {!isScheduled ? (
+                 <span className="text-[10px] opacity-80">Desc</span>
+              ) : hasWorkout ? (
+                <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-current' : 'bg-gray-500'}`} />
               ) : (
-                 <span className="text-[10px] opacity-50">Desc</span>
+                 <span className="text-[10px] opacity-50">-</span>
               )}
             </button>
           );
@@ -97,7 +124,18 @@ export const WeeklyPlan: React.FC<WeeklyPlanProps> = ({ student, onUpdatePlan })
       {/* Active Day Content */}
       <div className="flex-1 bg-dark-800/50 border border-dark-700 rounded-2xl p-6 overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-white">{activeDay}</h3>
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                {activeDay}
+                {isDayScheduled(activeDay) ? (
+                    <span className="text-xs font-normal text-primary-400 bg-primary-900/20 px-2 py-0.5 rounded border border-primary-900/50 flex items-center gap-1">
+                        <CheckCircle2 size={12} /> Dia de Treino
+                    </span>
+                ) : (
+                    <span className="text-xs font-normal text-yellow-400 bg-yellow-900/20 px-2 py-0.5 rounded border border-yellow-700/50 flex items-center gap-1">
+                        <XCircle size={12} /> Dia de Descanso
+                    </span>
+                )}
+            </h3>
             {currentSession && (
                 <span className="px-3 py-1 bg-dark-700 rounded-full text-xs text-primary-300 font-medium border border-primary-900/50">
                     Foco: {currentSession.focus}
@@ -106,9 +144,16 @@ export const WeeklyPlan: React.FC<WeeklyPlanProps> = ({ student, onUpdatePlan })
         </div>
 
         {!currentSession || currentSession.exercises.length === 0 ? (
-          <div className="h-48 flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-dark-700 rounded-xl">
-             <Dumbbell size={32} className="mb-2 opacity-50" />
-             <p>Descanso ou sem treino planejado.</p>
+          <div className="h-48 flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-dark-700 rounded-xl bg-dark-800/20">
+             <Dumbbell size={32} className="mb-3 opacity-50" />
+             {isDayScheduled(activeDay) ? (
+                 <div className="text-center">
+                    <p className="text-gray-300 font-medium mb-1">Dia de treino sem exercícios.</p>
+                    <p className="text-sm">Clique em "Gerar com IA" para criar o treino.</p>
+                 </div>
+             ) : (
+                 <p className="text-yellow-600/80">Dia de descanso programado.</p>
+             )}
           </div>
         ) : (
           <div className="space-y-1">

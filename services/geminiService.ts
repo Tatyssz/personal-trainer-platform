@@ -41,6 +41,9 @@ const weekPlanSchema: Schema = {
 };
 
 export const generateWorkoutPlan = async (student: Student, specificGoal?: string): Promise<WorkoutSession[]> => {
+  const scheduleDays = student.schedule?.days || [];
+  const scheduleTime = student.schedule?.time || 'Horário não definido';
+
   const prompt = `
     Atue como um Personal Trainer de elite.
     Crie uma ficha de treino semanal (Segunda a Domingo) para o seguinte aluno:
@@ -50,23 +53,26 @@ export const generateWorkoutPlan = async (student: Student, specificGoal?: strin
     Idade: ${student.age} anos
     Gênero: ${student.gender}
     Nível de Experiência: ${student.experienceLevel}
-    Dias disponíveis para treino: ${student.trainingDays} dias na semana
+    
+    AGENDA DE TREINO (MUITO IMPORTANTE):
+    Dias de Treino Ativos: ${scheduleDays.join(', ')}
+    Horário: ${scheduleTime}
     Modalidade: ${student.trainingType === 'individual' ? 'Personal (Individual - Foco em técnica e especificidade)' : 'Treino Coletivo (Adaptável para grupos)'}
     
     OBJETIVO:
     ${specificGoal || student.goal}
     
-    RESTRIÇÕES E SAÚDE (MUITO IMPORTANTE):
+    RESTRIÇÕES E SAÚDE:
     Lesões/Restrições: ${student.injuries || "Nenhuma relatada"}
     Notas Médicas: ${student.medicalNotes || "Nenhuma"}
     
     Regras de Ouro:
     1. O treino deve ser SEGURO. Se houver lesões, evite exercícios que agravem a condição.
     2. Respeite o nível de experiência (Iniciante = menos volume, mais máquinas; Avançado = mais volume, pesos livres).
-    3. Se for 'Treino Coletivo', prefira exercícios que usem menos equipamentos complexos ou que sejam fáceis de revezar.
-    4. Responda APENAS com o JSON seguindo o schema fornecido.
-    5. Use nomes de exercícios comuns em academias no Brasil.
-    6. Se o aluno treina X dias, os outros dias devem ser "Descanso" (exercises array vazio).
+    3. GERE TREINOS (lista de exercícios) APENAS PARA OS DIAS LISTADOS EM "Dias de Treino Ativos".
+    4. Para os dias que NÃO estão na lista de ativos, o array 'exercises' deve ser vazio e o foco deve ser "Descanso".
+    5. Responda APENAS com o JSON seguindo o schema fornecido.
+    6. Use nomes de exercícios comuns em academias no Brasil.
   `;
 
   try {
@@ -99,6 +105,37 @@ export const generateWorkoutPlan = async (student: Student, specificGoal?: strin
 
   } catch (error) {
     console.error("Error generating workout:", error);
+    throw error;
+  }
+};
+
+export const generateWorkoutText = async (topic: string): Promise<string> => {
+  const prompt = `
+    Atue como um Personal Trainer Expert.
+    Escreva um guia de treino completo e detalhado (formato texto/artigo) sobre o seguinte tema: "${topic}".
+    
+    O texto deve incluir:
+    - Aquecimento sugerido
+    - Lista de Exercícios (Séries x Repetições)
+    - Dicas de técnica
+    - Intervalos de descanso
+    
+    Formate o texto de forma limpa e direta, usando markdown simples se necessário.
+    Idioma: Português do Brasil.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: {
+        thinkingConfig: { thinkingBudget: 0 }
+      }
+    });
+
+    return response.text || "Não foi possível gerar o texto.";
+  } catch (error) {
+    console.error("Error generating text workout:", error);
     throw error;
   }
 };

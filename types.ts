@@ -25,9 +25,22 @@ export interface WorkoutSession {
   exercises: Exercise[];
 }
 
+export interface WorkoutTemplate {
+  id: string;
+  title: string;
+  content: string; // Text based description
+  tags: string[];
+  createdAt: string;
+}
+
 export type Gender = 'masculino' | 'feminino' | 'outro' | 'nao_informar';
 export type ExperienceLevel = 'iniciante' | 'intermediario' | 'avancado';
 export type TrainingType = 'individual' | 'coletivo';
+
+export interface Schedule {
+  days: string[]; // ["Segunda", "Quarta", "Sexta"]
+  time: string;   // "18:00"
+}
 
 export interface Student {
   // Identificação
@@ -49,13 +62,9 @@ export interface Student {
   // Objetivo e Treino
   goal: string; // Hipertrofia, Emagrecimento, etc.
   experienceLevel: ExperienceLevel;
-  trainingDays: number;
   trainingType: TrainingType; 
+  schedule: Schedule; // New detailed schedule field
   startDate: string;
-
-  // Progresso Visual
-  beforePhotoUrl?: string;
-  afterPhotoUrl?: string;
 
   // Saúde (Opcionais)
   injuries?: string;
@@ -65,4 +74,4 @@ export interface Student {
   weeklyPlan: WorkoutSession[];
 }
 
-export type ViewState = 'DASHBOARD' | 'STUDENTS' | 'STUDENT_DETAIL';
+export type ViewState = 'DASHBOARD' | 'STUDENTS' | 'STUDENT_DETAIL' | 'WORKOUTS';

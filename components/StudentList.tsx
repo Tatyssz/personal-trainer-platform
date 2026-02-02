@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Student, Gender, ExperienceLevel, TrainingType } from '../types';
-import { ChevronRight, UserPlus, X, Trash2, Calendar, Weight, Activity, FileText, Users, Camera } from 'lucide-react';
+import { ChevronRight, UserPlus, X, Trash2, Calendar, Weight, Activity, Clock, Users } from 'lucide-react';
+import { DAYS_OF_WEEK } from '../constants';
 
 interface StudentListProps {
   students: Student[];
@@ -23,13 +24,12 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
     weight: '',
     goal: '',
     experienceLevel: 'iniciante' as ExperienceLevel,
-    trainingDays: 3,
     trainingType: 'individual' as TrainingType,
+    scheduleDays: [] as string[],
+    scheduleTime: '',
     startDate: new Date().toISOString().split('T')[0],
     injuries: '',
-    medicalNotes: '',
-    beforePhotoUrl: '',
-    afterPhotoUrl: ''
+    medicalNotes: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -38,12 +38,29 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
     e.preventDefault();
     // Basic validation
     if (!formData.name || !formData.email || !formData.birthDate || !formData.goal) return;
+    if (formData.scheduleDays.length === 0) {
+      alert("Selecione pelo menos um dia de treino.");
+      return;
+    }
 
     onAddStudent({
-      ...formData,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      birthDate: formData.birthDate,
+      gender: formData.gender,
       height: Number(formData.height),
       weight: Number(formData.weight),
-      trainingDays: Number(formData.trainingDays)
+      goal: formData.goal,
+      experienceLevel: formData.experienceLevel,
+      trainingType: formData.trainingType,
+      startDate: formData.startDate,
+      injuries: formData.injuries,
+      medicalNotes: formData.medicalNotes,
+      schedule: {
+        days: formData.scheduleDays,
+        time: formData.scheduleTime || '00:00'
+      }
     });
 
     setFormData(initialFormState);
@@ -62,12 +79,26 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const toggleDay = (day: string) => {
+    setFormData(prev => {
+      const currentDays = prev.scheduleDays;
+      const newDays = currentDays.includes(day)
+        ? currentDays.filter(d => d !== day)
+        : [...currentDays, day];
+      
+      // Sort days according to standard week order
+      const sortedDays = newDays.sort((a, b) => DAYS_OF_WEEK.indexOf(a) - DAYS_OF_WEEK.indexOf(b));
+      
+      return { ...prev, scheduleDays: sortedDays };
+    });
+  };
+
   return (
-    <div className="h-full p-6 relative">
-      <div className="flex justify-between items-end mb-8">
+    <div className="h-full p-4 md:p-6 relative overflow-y-auto">
+      <div className="flex justify-between items-end mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Alunos</h1>
-          <p className="text-gray-400">Gerencie o progresso e fichas dos seus alunos.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">Alunos</h1>
+          <p className="text-sm md:text-base text-gray-400">Gerencie o progresso e fichas.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -77,12 +108,12 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20 md:pb-0">
         {students.map((student) => (
           <div 
             key={student.id}
             onClick={() => onSelectStudent(student)}
-            className="group relative bg-dark-800 border border-dark-700 hover:border-primary-500/50 rounded-2xl p-5 cursor-pointer transition-all hover:shadow-xl hover:shadow-primary-900/10"
+            className="group relative bg-dark-800 border border-dark-700 hover:border-primary-500/50 rounded-2xl p-4 md:p-5 cursor-pointer transition-all hover:shadow-xl hover:shadow-primary-900/10"
           >
             <button
               onClick={(e) => handleDeleteClick(e, student.id, student.name)}
@@ -92,40 +123,40 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
               <Trash2 size={18} />
             </button>
 
-            <div className="flex items-center gap-4 mb-4 pr-8">
+            <div className="flex items-center gap-3 md:gap-4 mb-4 pr-8">
               <img 
                 src={student.avatarUrl} 
                 alt={student.name} 
-                className="w-16 h-16 rounded-full object-cover border-2 border-dark-600 group-hover:border-primary-500 transition-colors"
+                className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-dark-600 group-hover:border-primary-500 transition-colors"
               />
-              <div>
-                <h3 className="text-lg font-bold text-white group-hover:text-primary-300 transition-colors">{student.name}</h3>
+              <div className="min-w-0">
+                <h3 className="text-base md:text-lg font-bold text-white group-hover:text-primary-300 transition-colors truncate">{student.name}</h3>
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm text-gray-500">{student.age} anos • {student.experienceLevel}</span>
+                  <span className="text-xs md:text-sm text-gray-500">{student.age} anos • {student.experienceLevel}</span>
                   {student.trainingType === 'coletivo' && (
-                    <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 w-fit">Treino Coletivo</span>
+                    <span className="text-[10px] md:text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 w-fit">Coletivo</span>
                   )}
                 </div>
               </div>
             </div>
             
             <div className="space-y-2 mb-4">
-               <div className="flex justify-between text-sm">
+               <div className="flex justify-between text-xs md:text-sm">
                  <span className="text-gray-500">Objetivo</span>
                  <span className="text-gray-300 font-medium text-right truncate max-w-[150px]">{student.goal}</span>
                </div>
+               <div className="flex justify-between text-xs md:text-sm">
+                 <span className="text-gray-500">Agenda</span>
+                 <span className="text-gray-300 text-right text-xs">
+                    {student.schedule?.days.length} dias • {student.schedule?.time}
+                 </span>
+               </div>
                {student.injuries && (
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs md:text-sm">
                     <span className="text-red-400 flex items-center gap-1"><Activity size={12}/> Atenção</span>
                     <span className="text-gray-400 text-xs truncate max-w-[150px]">{student.injuries}</span>
                   </div>
                )}
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-500">Treinos na semana</span>
-                 <span className="text-primary-400 font-mono font-bold">
-                    {student.weeklyPlan.filter(d => d.exercises.length > 0).length} / 7
-                 </span>
-               </div>
             </div>
 
             <div className="pt-4 border-t border-dark-700 flex justify-end">
@@ -137,12 +168,12 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
         ))}
       </div>
 
-      {/* Improved Modal Add Student */}
+      {/* Modal Add Student */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn overflow-y-auto">
           <div className="bg-dark-800 border border-dark-700 w-full max-w-2xl rounded-2xl shadow-2xl relative my-8 flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-dark-700 flex justify-between items-center sticky top-0 bg-dark-800 z-10 rounded-t-2xl">
-                <h2 className="text-2xl font-bold text-white">Novo Aluno</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-white">Novo Aluno</h2>
                 <button 
                   onClick={() => setIsModalOpen(false)}
                   className="text-gray-400 hover:text-white transition-colors"
@@ -235,38 +266,47 @@ export const StudentList: React.FC<StudentListProps> = ({ students, onSelectStud
                             <option value="individual">Individual (Personal)</option>
                             <option value="coletivo">Coletivo (Aulas)</option>
                         </select>
-                        <p className="text-[10px] text-gray-500 mt-1">Selecione "Coletivo" se o aluno for participar de turmas devido a restrições de horários ou recomendação médica de socialização.</p>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Dias de Treino/Semana</label>
-                        <input type="number" min="1" max="7" name="trainingDays" value={formData.trainingDays} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" />
+                    <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-gray-400 mb-2">Dias de Treino na Semana *</label>
+                        <div className="flex flex-wrap gap-2">
+                            {DAYS_OF_WEEK.map(day => (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => toggleDay(day)}
+                                    className={`
+                                        px-3 py-2 rounded-lg text-sm font-medium transition-colors border
+                                        ${formData.scheduleDays.includes(day)
+                                            ? 'bg-primary-600 text-white border-primary-500'
+                                            : 'bg-dark-900 text-gray-400 border-dark-600 hover:border-gray-500'
+                                        }
+                                    `}
+                                >
+                                    {day.slice(0, 3)}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Data de Início</label>
-                        <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" />
+                    
+                    <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                        <div>
+                             <label className="block text-xs font-medium text-gray-400 mb-1">Horário Habitual</label>
+                             <div className="relative">
+                                <Clock size={16} className="absolute left-3 top-3 text-gray-500" />
+                                <input type="time" name="scheduleTime" value={formData.scheduleTime} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg pl-10 pr-3 py-2 text-white focus:border-primary-500 focus:outline-none" />
+                             </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">Data de Início</label>
+                            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" />
+                        </div>
                     </div>
                 </div>
               </div>
 
-               {/* Seção 4: Progresso Visual (NOVO) */}
-               <div>
-                <h3 className="text-primary-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Camera size={16} /> Progresso Visual (Opcional)
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">URL Foto "Antes"</label>
-                        <input type="text" name="beforePhotoUrl" value={formData.beforePhotoUrl} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" placeholder="https://..." />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">URL Foto "Depois" (Atual)</label>
-                        <input type="text" name="afterPhotoUrl" value={formData.afterPhotoUrl} onChange={handleChange} className="w-full bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none" placeholder="https://..." />
-                    </div>
-                </div>
-              </div>
-
-               {/* Seção 5: Saúde */}
+               {/* Seção 4: Saúde */}
               <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20">
                 <h3 className="text-red-400 text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Activity size={16} /> Saúde e Restrições
